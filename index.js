@@ -12,7 +12,6 @@ const credentials = require(path.resolve(process.env.GOOGLE_CREDENTIALS_PATH));
 // Twilio
 const client = twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH);
 const TWILIO_NUMBER = process.env.TWILIO_WHATSAPP_NUMBER;
-const CLIENTE_NUMBER = "whatsapp:+553499220591"; // Número da sua cliente
 
 async function autorizarGoogleSheets() {
   const auth = new google.auth.GoogleAuth({
@@ -38,24 +37,16 @@ async function buscarAniversariantesHoje(auth) {
   });
 }
 
-async function enviarResumoParaCliente(aniversariantes) {
-  let mensagem = `🎉 *Aniversariantes de hoje:*\n\n`;
-
-  aniversariantes.forEach(([nome, numero, data]) => {
-    mensagem += `• ${nome} – ${numero}\n`;
-  });
-
-  mensagem += `\n🗓️ ${dayjs().format("DD/MM/YYYY")}`;
-
+async function enviarWhatsApp(nome, numero, data) {
   try {
     await client.messages.create({
       from: TWILIO_NUMBER,
-      to: CLIENTE_NUMBER,
-      body: mensagem,
+      to: `whatsapp:+55${numero}`,
+      body: `🎉 Hoje é aniversário de ${nome}! 🎂\n📅 Data: ${dayjs(data).format("DD/MM/YYYY")}\n\nNão esqueça de mandar os parabéns!`,
     });
-    console.log("✅ Mensagem enviada para a cliente.");
+    console.log(`✅ Mensagem enviada para ${nome}`);
   } catch (erro) {
-    console.error("❌ Erro ao enviar para a cliente:", erro.message);
+    console.error(`❌ Erro ao enviar para ${nome}:`, erro.message);
   }
 }
 
@@ -69,7 +60,9 @@ async function iniciar() {
       return;
     }
 
-    await enviarResumoParaCliente(aniversariantes);
+    for (const [nome, numero, data] of aniversariantes) {
+      await enviarWhatsApp(nome, numero, data);
+    }
   } catch (erro) {
     console.error("❌ Erro geral:", erro.message);
   }
