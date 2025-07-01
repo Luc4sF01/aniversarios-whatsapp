@@ -3,18 +3,20 @@ require("dotenv").config();
 const { google } = require("googleapis");
 const dayjs = require("dayjs");
 const twilio = require("twilio");
+const path = require("path");
 
 // IDs e Credenciais
 const SHEET_ID = process.env.GOOGLE_SHEET_ID;
-const GOOGLE_CREDENTIALS = JSON.parse(process.env.GOOGLE_CREDENTIALS);
+const credentials = require(path.resolve(process.env.GOOGLE_CREDENTIALS_PATH));
 
 // Twilio
 const client = twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH);
 const TWILIO_NUMBER = process.env.TWILIO_WHATSAPP_NUMBER;
+const CLIENTE_NUMBER = "whatsapp:+553499220591"; // Número da sua cliente
 
 async function autorizarGoogleSheets() {
   const auth = new google.auth.GoogleAuth({
-    credentials: GOOGLE_CREDENTIALS,
+    credentials,
     scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
   });
   return await auth.getClient();
@@ -36,16 +38,24 @@ async function buscarAniversariantesHoje(auth) {
   });
 }
 
-async function enviarWhatsApp(nome, numero, data) {
+async function enviarResumoParaCliente(aniversariantes) {
+  let mensagem = `🎉 *Aniversariantes de hoje:*\n\n`;
+
+  aniversariantes.forEach(([nome, numero, data]) => {
+    mensagem += `• ${nome} – ${numero}\n`;
+  });
+
+  mensagem += `\n🗓️ ${dayjs().format("DD/MM/YYYY")}`;
+
   try {
     await client.messages.create({
       from: TWILIO_NUMBER,
-      to: `whatsapp:+55${numero}`,
-      body: `🎉 Hoje é aniversário de ${nome}! 🎂\n📅 Data: ${dayjs(data).format("DD/MM/YYYY")}\n\nNão esqueça de mandar os parabéns!`,
+      to: CLIENTE_NUMBER,
+      body: mensagem,
     });
-    console.log(`✅ Mensagem enviada para ${nome}`);
+    console.log("✅ Mensagem enviada para a cliente.");
   } catch (erro) {
-    console.error(`❌ Erro ao enviar para ${nome}:`, erro.message);
+    console.error("❌ Erro ao enviar para a cliente:", erro.message);
   }
 }
 
@@ -59,9 +69,7 @@ async function iniciar() {
       return;
     }
 
-    for (const [nome, numero, data] of aniversariantes) {
-      await enviarWhatsApp(nome, numero, data);
-    }
+    await enviarResumoParaCliente(aniversariantes);
   } catch (erro) {
     console.error("❌ Erro geral:", erro.message);
   }
