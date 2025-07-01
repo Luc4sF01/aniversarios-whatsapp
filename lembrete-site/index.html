@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lembrete de Aniversário</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="container">
+    <h1>📱 Cadastro de Clientes</h1>
+    <p>Receba lembretes no dia do aniversário dos seus clientes!</p>
+
+    <form id="formulario">
+      <label>
+        Nome do Cliente:
+        <input type="text" name="nome" required placeholder="Ex: Maria Silva" />
+      </label>
+
+      <label>
+        Número de WhatsApp:
+        <input
+          type="tel"
+          name="numero"
+          required
+          pattern="^\d{2}\d{9}$"
+          placeholder="Ex: 31912345678"
+          title="Digite somente números, com DDD. Ex: 31912345678"
+        />
+      </label>
+
+      <label>
+        Data de Aniversário:
+        <input type="date" name="data" required />
+      </label>
+
+      <button type="submit">Cadastrar</button>
+      <p id="resposta"></p>
+    </form>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
