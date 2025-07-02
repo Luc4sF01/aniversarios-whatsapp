@@ -3,27 +3,27 @@ const { google } = require("googleapis");
 const dayjs = require("dayjs");
 const twilio = require("twilio");
 
-// IDs e Credenciais
+// === CONFIGURAÇÕES ===
 const SHEET_ID = process.env.GOOGLE_SHEET_ID;
-const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON); // 👈 Correto para Render
-
-// Twilio
+const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS); // Lê do .env como JSON string
 const client = twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH);
 const TWILIO_NUMBER = process.env.TWILIO_WHATSAPP_NUMBER;
 
+// === AUTORIZAR GOOGLE SHEETS ===
 async function autorizarGoogleSheets() {
   const auth = new google.auth.GoogleAuth({
-    credentials: credentials,
+    credentials,
     scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
   });
   return await auth.getClient();
 }
 
+// === BUSCAR ANIVERSARIANTES DE HOJE ===
 async function buscarAniversariantesHoje(auth) {
   const sheets = google.sheets({ version: "v4", auth });
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: SHEET_ID,
-    range: "Página1!A2:C", // Nome | Número | Data
+    range: "Página1!A2:C", // Espera: Nome | Número | Data
   });
 
   const hoje = dayjs().format("YYYY-MM-DD");
@@ -35,12 +35,13 @@ async function buscarAniversariantesHoje(auth) {
   });
 }
 
+// === ENVIAR MENSAGEM PELO WHATSAPP ===
 async function enviarWhatsApp(nome, numero, data) {
   try {
     await client.messages.create({
       from: TWILIO_NUMBER,
-      to: `whatsapp:+55${numero}`,
-      body: `🎉 Hoje é aniversário de ${nome}! 🎂\n📅 Data: ${dayjs(data).format("DD/MM/YYYY")}\n\nNão esqueça de mandar os parabéns!`,
+      to: `whatsapp:+55${numero}`, // Ex: 34999999999
+      body: `🎉 Hoje é aniversário de ${nome}! 🎂\n📅 ${dayjs(data).format("DD/MM/YYYY")}\n\nNão esqueça de mandar os parabéns!`,
     });
     console.log(`✅ Mensagem enviada para ${nome}`);
   } catch (erro) {
@@ -48,6 +49,7 @@ async function enviarWhatsApp(nome, numero, data) {
   }
 }
 
+// === INICIAR O PROCESSO ===
 async function iniciar() {
   try {
     const auth = await autorizarGoogleSheets();
