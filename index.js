@@ -1,4 +1,3 @@
-// index.js
 require("dotenv").config();
 const { google } = require("googleapis");
 const dayjs = require("dayjs");
@@ -6,7 +5,7 @@ const twilio = require("twilio");
 
 // IDs e Credenciais
 const SHEET_ID = process.env.GOOGLE_SHEET_ID;
-const credentials = require(process.env.GOOGLE_CREDENTIALS_PATH); // ✅ Correto
+const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON); // 👈 Correto para Render
 
 // Twilio
 const client = twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH);
@@ -14,7 +13,7 @@ const TWILIO_NUMBER = process.env.TWILIO_WHATSAPP_NUMBER;
 
 async function autorizarGoogleSheets() {
   const auth = new google.auth.GoogleAuth({
-    credentials: credentials, // ✅ Agora está certo
+    credentials: credentials,
     scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
   });
   return await auth.getClient();
