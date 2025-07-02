@@ -1,13 +1,30 @@
 require("dotenv").config();
 const { google } = require("googleapis");
 const dayjs = require("dayjs");
-const twilio = require("twilio");
+const nodemailer = require("nodemailer");
 
 // === CONFIGURAÇÕES ===
 const SHEET_ID = process.env.GOOGLE_SHEET_ID;
-const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS); // Lê do .env como JSON string
-const client = twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH);
-const TWILIO_NUMBER = process.env.TWILIO_WHATSAPP_NUMBER;
+let credentials;
+
+// === LÊ AS CREDENCIAIS DIRETO DO ENV (como string JSON)
+try {
+  credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
+} catch (err) {
+  console.error("❌ Erro ao ler GOOGLE_CREDENTIALS. Verifique se está como JSON válido.");
+  process.exit(1);
+}
+
+const DESTINATARIO = process.env.DESTINATARIO;
+
+// === CONFIGURAR TRANSPORTE DE E-MAIL ===
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
 // === AUTORIZAR GOOGLE SHEETS ===
 async function autorizarGoogleSheets() {
@@ -23,7 +40,7 @@ async function buscarAniversariantesHoje(auth) {
   const sheets = google.sheets({ version: "v4", auth });
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: SHEET_ID,
-    range: "Página1!A2:C", // Espera: Nome | Número | Data
+    range: "Página1!A2:C", // Nome | Número | Data
   });
 
   const hoje = dayjs().format("YYYY-MM-DD");
@@ -35,17 +52,26 @@ async function buscarAniversariantesHoje(auth) {
   });
 }
 
-// === ENVIAR MENSAGEM PELO WHATSAPP ===
-async function enviarWhatsApp(nome, numero, data) {
+// === ENVIAR E-MAIL COM ANIVERSARIANTES ===
+async function enviarEmail(aniversariantes) {
+  const lista = aniversariantes
+    .map(([nome, numero, data]) => {
+      return `🎉 ${nome} — ${dayjs(data).format("DD/MM/YYYY")}`;
+    })
+    .join("\n");
+
+  const mailOptions = {
+    from: `"Lembretes Aniversário" <${process.env.EMAIL_USER}>`,
+    to: DESTINATARIO,
+    subject: "🎂 Aniversariantes do dia!",
+    text: `Olá! Seguem os aniversariantes de hoje:\n\n${lista}`,
+  };
+
   try {
-    await client.messages.create({
-      from: TWILIO_NUMBER,
-      to: `whatsapp:+55${numero}`, // Ex: 34999999999
-      body: `🎉 Hoje é aniversário de ${nome}! 🎂\n📅 ${dayjs(data).format("DD/MM/YYYY")}\n\nNão esqueça de mandar os parabéns!`,
-    });
-    console.log(`✅ Mensagem enviada para ${nome}`);
+    await transporter.sendMail(mailOptions);
+    console.log("📧 E-mail enviado com sucesso!");
   } catch (erro) {
-    console.error(`❌ Erro ao enviar para ${nome}:`, erro.message);
+    console.error("❌ Erro ao enviar e-mail:", erro.message);
   }
 }
 
@@ -60,9 +86,7 @@ async function iniciar() {
       return;
     }
 
-    for (const [nome, numero, data] of aniversariantes) {
-      await enviarWhatsApp(nome, numero, data);
-    }
+    await enviarEmail(aniversariantes);
   } catch (erro) {
     console.error("❌ Erro geral:", erro.message);
   }
