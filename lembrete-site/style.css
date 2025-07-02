@@ -1,7 +1,15 @@
-body {
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
+* {
   margin: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #5e60ce, #4895ef);
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: url('https://images.unsplash.com/photo-1557682224-5b8590cd9ec5?auto=format&fit=crop&w=1650&q=80') no-repeat center center fixed;
+  background-size: cover;
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -10,87 +18,84 @@ body {
 }
 
 .container {
-  background: white;
-  padding: 30px 25px;
-  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.95);
+  padding: 35px 30px;
+  border-radius: 16px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+  max-width: 420px;
   width: 100%;
-  max-width: 400px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.7s ease-in-out;
   text-align: center;
-  animation: fadeIn 1s ease-in-out;
 }
 
 h1 {
+  font-size: 1.7rem;
   margin-bottom: 10px;
-  color: #333;
-  font-size: 1.5rem;
+  color: #111;
 }
 
 p {
-  color: #555;
-  margin-bottom: 20px;
   font-size: 0.95rem;
+  color: #444;
+  margin-bottom: 25px;
 }
 
 form {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 18px;
 }
 
 label {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  text-align: left;
+  font-weight: 600;
   color: #333;
   font-size: 0.9rem;
 }
 
 input {
-  padding: 10px;
-  width: 100%;
-  margin-top: 5px;
+  padding: 12px;
+  border-radius: 8px;
   border: 1px solid #ccc;
-  border-radius: 6px;
-  transition: border 0.3s;
   font-size: 1rem;
+  background-color: #f9f9f9;
+  transition: border 0.3s;
 }
 
 input:focus {
-  border-color: #4895ef;
+  border-color: #3b82f6;
   outline: none;
 }
 
 button {
-  padding: 12px;
-  background: #4895ef;
+  padding: 14px;
+  background-color: #3b82f6;
   color: white;
-  font-weight: bold;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.3s;
+  font-weight: 600;
   font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
 }
 
 button:hover {
-  background: #4361ee;
+  background-color: #2563eb;
 }
 
 #resposta {
-  margin-top: 10px;
+  margin-top: 12px;
   font-size: 0.95rem;
   color: green;
 }
 
-/* ✅ Responsivo para telas menores */
 @media (max-width: 480px) {
   .container {
     padding: 25px 20px;
   }
 
   h1 {
-    font-size: 1.3rem;
+    font-size: 1.4rem;
   }
 
   button {
@@ -105,7 +110,7 @@ button:hover {
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(15px);
   }
   to {
     opacity: 1;
